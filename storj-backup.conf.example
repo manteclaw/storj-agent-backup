@@ -1,0 +1,70 @@
+# storj-agent-backup — example configuration.
+#
+# Copy to storj-backup.conf (same directory as the scripts, or
+# ~/.config/storj-agent-backup/storj-backup.conf) and edit.
+# Environment variables override every scalar setting below.
+#
+# Secrets are NEVER put here: Storj S3 credentials come from the
+# environment only (RCLONE_S3_ACCESS_KEY_ID / RCLONE_S3_SECRET_ACCESS_KEY).
+
+# --- Storj ---
+# Bucket backups go into. Default: agent-backup.
+BACKUP_BUCKET="${BACKUP_BUCKET:-agent-backup}"
+# Bucket offloaded files go into. Default: ${BACKUP_BUCKET}-offload.
+OFFLOAD_BUCKET="${OFFLOAD_BUCKET:-${BACKUP_BUCKET}-offload}"
+# S3 gateway endpoint (Storj). Change only if you use another gateway.
+STORJ_ENDPOINT="${STORJ_ENDPOINT:-https://gateway.storjshare.io}"
+
+# --- Backup sources ---
+# "local-path:remote-prefix" — each local path is copied into the bucket
+# under its remote prefix. Add or remove lines to taste.
+BACKUP_SOURCES=(
+  "$HOME/notes:notes"
+  "$HOME/workspace:workspace"
+)
+
+# rclone exclude patterns applied to every backup copy.
+BACKUP_EXCLUDES=(
+  '**/*.partial'
+  '**/.git/**'
+)
+
+# Individual files in $HOME to back up (max-depth 1, into home-files/).
+HOME_FILES=(
+  ".bashrc"
+  ".gitconfig"
+)
+
+# --- Offload (free disk space) ---
+# Keep at least this much of DISK_PATH free (percent).
+FREE_SPACE_THRESHOLD_PCT="${FREE_SPACE_THRESHOLD_PCT:-30}"
+# Disk whose free space is watched. Default: $HOME.
+DISK_PATH="${DISK_PATH:-$HOME}"
+
+# Local copies that ALREADY live on Storj, as "local-path|s3-bucket/prefix".
+# When disk space is low, each is verified with `rclone check --size-only`
+# against Storj and only removed locally if the check reports zero
+# differences. The bucket is never written to by this step — it is the
+# source of truth. Leave empty if you have no such copies.
+MIRRORED_COPIES=(
+  "$HOME/big-archive|my-archive-bucket"
+)
+
+# Paths that must NEVER be offloaded, in addition to the built-in guards
+# (the kit directory, the config, the manifest, the candidates file, the
+# log directory, $HOME itself, and /).
+PROTECTED_PATHS=(
+  "$HOME/.ssh"
+  "$HOME/.gnupg"
+)
+
+# --- Files and tools ---
+# rclone binary. Default: rclone on PATH.
+RCLONE="${RCLONE:-rclone}"
+# Where logs, the offload manifest, and the candidates list live.
+LOG_DIR="${LOG_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/storj-agent-backup/logs}"
+MANIFEST_FILE="${MANIFEST_FILE:-${XDG_STATE_HOME:-$HOME/.local/state}/storj-agent-backup/offload-manifest.jsonl}"
+CANDIDATES_FILE="${CANDIDATES_FILE:-$HOME/.config/storj-agent-backup/offload-candidates.txt}"
+# rclone parallelism.
+RCLONE_CHECKERS="${RCLONE_CHECKERS:-8}"
+RCLONE_TRANSFERS="${RCLONE_TRANSFERS:-4}"

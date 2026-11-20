@@ -1,0 +1,9 @@
+# Local config (bucket names, paths) — copy from the .example instead.
+storj-backup.conf
+offload-candidates.txt
+# Runtime state.
+logs/
+offload-manifest.jsonl
+*.log
+# Credentials must never be committed (they are env-only by design).
+.env

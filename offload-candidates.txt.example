@@ -1,0 +1,14 @@
+# storj-agent-backup — example offload candidates list.
+#
+# Copy to the path in CANDIDATES_FILE (default:
+# ~/.config/storj-agent-backup/offload-candidates.txt), one absolute path
+# per line. Lines starting with # and blank lines are ignored.
+#
+# Each listed path is copied to the offload bucket, verified with
+# `rclone check --size-only`, and only then removed locally. Every
+# removal is recorded in the manifest (offload-manifest.jsonl), and
+# restore-from-storj.sh can bring it back.
+#
+# Examples (edit to your own bulky directories):
+# /home/you/Downloads/old-installers
+# /home/you/workspace/archived-datasets
